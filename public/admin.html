@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de administración - IPs registradas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>IPs registradas</h1>
+    <p>Listado de visitantes que aceptaron las cookies</p>
+  </header>
+
+  <main>
+    <table>
+      <thead>
+        <tr><th>Fecha/Hora</th><th>Dirección IP</th></tr>
+      </thead>
+      <tbody id="ip-table-body">
+        <tr><td colspan="2">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    fetch('/api/ips')
+      .then(res => res.json())
+      .then(data => {
+        const body = document.getElementById('ip-table-body');
+        if (data.ips.length === 0) {
+          body.innerHTML = '<tr><td colspan="2">Todavía no hay registros</td></tr>';
+          return;
+        }
+        body.innerHTML = data.ips.map(line => {
+          const [fecha, ip] = line.split(' | ');
+          return `<tr><td>${fecha}</td><td>${ip}</td></tr>`;
+        }).join('');
+      });
+  </script>
+</body>
+</html>

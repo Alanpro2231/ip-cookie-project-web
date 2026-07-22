@@ -1,0 +1,12 @@
+{
+  "name": "ip-cookie-project",
+  "version": "1.0.0",
+  "description": "Proyecto universitario: página con banner de cookies que registra la IP del visitante al aceptar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
