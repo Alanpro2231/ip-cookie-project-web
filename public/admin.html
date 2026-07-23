@@ -2,38 +2,59 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel de administración - IPs registradas</title>
+  <title>Panel de administración - Datos registrados</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0 0 0.6rem 0;
+      font-size: 1rem;
+      color: #2c3e50;
+    }
+    .card table {
+      margin: 0;
+    }
+    .card td {
+      padding: 0.3rem 0.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #eee;
+    }
+    .card td:first-child {
+      color: #666;
+      width: 40%;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>IPs registradas</h1>
-    <p>Listado de visitantes que aceptaron las cookies</p>
+    <h1>Datos registrados</h1>
+    <p>Información recogida al aceptar las cookies (uso académico - ciberseguridad)</p>
   </header>
 
-  <main>
-    <table>
-      <thead>
-        <tr><th>Fecha/Hora</th><th>Dirección IP</th></tr>
-      </thead>
-      <tbody id="ip-table-body">
-        <tr><td colspan="2">Cargando...</td></tr>
-      </tbody>
-    </table>
+  <main style="max-width: 900px;">
+    <div id="lista">Cargando...</div>
   </main>
 
   <script>
-    fetch('/api/ips')
+    fetch('/api/registros')
       .then(res => res.json())
       .then(data => {
-        const body = document.getElementById('ip-table-body');
-        if (data.ips.length === 0) {
-          body.innerHTML = '<tr><td colspan="2">Todavía no hay registros</td></tr>';
+        const cont = document.getElementById('lista');
+        if (data.registros.length === 0) {
+          cont.innerHTML = '<p>Todavía no hay registros</p>';
           return;
         }
-        body.innerHTML = data.ips.map(line => {
-          const [fecha, ip] = line.split(' | ');
-          return `<tr><td>${fecha}</td><td>${ip}</td></tr>`;
+        cont.innerHTML = data.registros.map((r, i) => {
+          const filas = Object.entries(r).map(([clave, valor]) =>
+            `<tr><td>${clave}</td><td>${valor === null ? '-' : valor}</td></tr>`
+          ).join('');
+          return `<div class="card"><h3>Registro #${i + 1}</h3><table>${filas}</table></div>`;
         }).join('');
       });
   </script>
