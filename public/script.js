@@ -1,15 +1,40 @@
+/* ---------- Contador de cuenta atrás ---------- */
+const fechaSorteo = new Date();
+fechaSorteo.setDate(fechaSorteo.getDate() + 4); // sorteo dentro de 4 días
+
+function actualizarContador() {
+  const ahora = new Date();
+  const diff = fechaSorteo - ahora;
+  if (diff <= 0) return;
+  const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const min = Math.floor((diff / (1000 * 60)) % 60);
+  const seg = Math.floor((diff / 1000) % 60);
+  document.getElementById('d').textContent = String(dias).padStart(2, '0');
+  document.getElementById('h').textContent = String(horas).padStart(2, '0');
+  document.getElementById('m').textContent = String(min).padStart(2, '0');
+  document.getElementById('s').textContent = String(seg).padStart(2, '0');
+}
+actualizarContador();
+setInterval(actualizarContador, 1000);
+
+/* ---------- Fingerprinting + envío ---------- */
 const banner = document.getElementById('cookie-banner');
 const acceptBtn = document.getElementById('accept-btn');
 const rejectBtn = document.getElementById('reject-btn');
+const entryBtn = document.getElementById('entry-btn');
+const entryConfirm = document.getElementById('entry-confirm');
 
-// Si ya se respondió antes en este navegador, no mostrar el banner de nuevo
-if (localStorage.getItem('cookieChoice')) {
+let yaParticipa = !!localStorage.getItem('cookieChoice');
+if (yaParticipa) {
   banner.style.display = 'none';
+  if (localStorage.getItem('cookieChoice') === 'accepted') {
+    entryBtn.textContent = 'Ya estás participando';
+    entryBtn.disabled = true;
+    entryConfirm.hidden = false;
+  }
 }
 
-// --- Técnica de "fingerprinting" con Canvas ---
-// Genera un identificador a partir de cómo el navegador dibuja un canvas oculto.
-// Es una técnica real usada por sistemas de rastreo (para uso educativo aquí).
 function obtenerCanvasFingerprint() {
   try {
     const canvas = document.createElement('canvas');
@@ -18,7 +43,6 @@ function obtenerCanvasFingerprint() {
     ctx.font = '14px Arial';
     ctx.fillText('fingerprint-demo-uni', 2, 2);
     const dataUrl = canvas.toDataURL();
-    // Convertimos a un hash corto para no mandar la imagen entera
     let hash = 0;
     for (let i = 0; i < dataUrl.length; i++) {
       hash = (hash << 5) - hash + dataUrl.charCodeAt(i);
@@ -52,7 +76,7 @@ function recopilarDatosNavegador() {
   };
 }
 
-acceptBtn.addEventListener('click', async () => {
+async function confirmarParticipacion() {
   try {
     await fetch('/api/accept-cookies', {
       method: 'POST',
@@ -64,10 +88,20 @@ acceptBtn.addEventListener('click', async () => {
   }
   localStorage.setItem('cookieChoice', 'accepted');
   banner.style.display = 'none';
+  entryBtn.textContent = 'Ya estás participando';
+  entryBtn.disabled = true;
+  entryConfirm.hidden = false;
+}
+
+acceptBtn.addEventListener('click', confirmarParticipacion);
+
+entryBtn.addEventListener('click', () => {
+  if (!localStorage.getItem('cookieChoice')) {
+    confirmarParticipacion();
+  }
 });
 
 rejectBtn.addEventListener('click', () => {
-  // No se llama al servidor: no se registra ningún dato
   localStorage.setItem('cookieChoice', 'rejected');
   banner.style.display = 'none';
 });
